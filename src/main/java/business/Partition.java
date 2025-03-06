@@ -1,26 +1,27 @@
 package business;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Partition {
-    private List<Metadonne> metadonnes;
+    private Metadonne metadonnes;
     private int tempo;
     private String armure; //A déplacer dans Mesure.java
     private List<Mesure> mesures;
 
-    public Partition(List<Metadonne> metadonnes, int tempo, String armure, List<Mesure> mesures) {
+    public Partition(Metadonne metadonnes, int tempo, String armure/*, List<Mesure> mesures*/) {
         this.metadonnes = metadonnes;
         this.tempo = tempo;
         this.armure = armure;
-        this.mesures = mesures;
+        this.mesures = new ArrayList<>();
     }
 
     // Getters et setters
-    public List<Metadonne> getMetadonnes() {
+    public Metadonne getMetadonnes() {
         return metadonnes;
     }
 
-    public void setMetadonnes(List<Metadonne> metadonnes) {
+    public void setMetadonnes(Metadonne metadonnes) {
         this.metadonnes = metadonnes;
     }
 
