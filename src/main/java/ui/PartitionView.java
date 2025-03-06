@@ -3,7 +3,6 @@ package ui;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 
 import java.util.HashMap;
@@ -15,11 +14,13 @@ public class PartitionView extends Canvas {
 
     // Positions des notes (Do en bas, Mi en haut)
     private final Map<String, Integer> notesPositions = new HashMap<>();
+    private final Map<String, Integer> durees = new HashMap<>();
 
     public PartitionView() {
         super(600, 300);
         gc = this.getGraphicsContext2D();
         initNotesPositions();
+        initDurees();
         dessinerPortee();
     }
 
@@ -45,6 +46,12 @@ public class PartitionView extends Canvas {
         notesPositions.put("Fa aigu", 50);
     }
 
+    private void initDurees() {
+        durees.put("Noire", 1);
+        durees.put("Blanche", 2);
+        durees.put("Ronde", 4);
+    }
+
     private void dessinerPortee() {
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(2);
@@ -61,16 +68,29 @@ public class PartitionView extends Canvas {
         gc.fillText("𝄢", 20, 180);*/
     }
 
-    public void ajouterNote(String note) {
-        if (!notesPositions.containsKey(note)) return;
+    public void ajouterNote(String note, String duree) {
+        if (!notesPositions.containsKey(note) || !durees.containsKey(duree)) return;
         
         int noteX = 100 + noteCount * 50;
         int noteY = notesPositions.get(note);
         gc.setFill(Color.BLACK);
-        gc.fillOval(noteX, noteY, 20, 20);
-        gc.strokeLine(noteX + 19, noteY + 10, noteX + 19, noteY - 60);
-        /*gc.setStroke(Color.BLACK);
-        gc.strokeOval(noteX, noteY, 20, 20);*/
+        gc.setStroke(Color.BLACK);
+        switch (durees.get(duree)) {
+            case 1:
+                gc.fillOval(noteX, noteY, 20, 20);
+                gc.strokeLine(noteX + 19, noteY + 10, noteX + 19, noteY - 60);
+                break;
+            case 2:
+                gc.strokeOval(noteX, noteY, 20, 20);
+                gc.strokeLine(noteX + 19, noteY + 10, noteX + 19, noteY - 60);
+                break;
+            case 4:
+                gc.strokeOval(noteX, noteY, 20, 20);
+                break;
+        
+            default:
+                break;
+        }
 
         // Ajouter une ou des lignes supplémentaires si nécessaire
         Map<String, Integer> barresgraves = new HashMap<>();

@@ -27,13 +27,17 @@ public class MainApp extends Application {
         noteSelector.getItems().addAll("Si grave", "Do grave", "Ré grave", "Mi grave", "Fa grave", "Sol", "La", "Si", "Do", "Ré", "Mi", "Fa", "Sol aigu", "La aigu", "Si aigu", "Do aigu", "Ré aigu", "Mi aigu", "Fa aigu");
         noteSelector.setValue("Do");
         Button addNote = new Button("Ajouter Note");
+        ComboBox<String> dureeSelector = new ComboBox<>();
+        dureeSelector.getItems().addAll("Noire", "Blanche", "Ronde");
+        dureeSelector.setValue("Noire");
         addNote.setOnAction(e -> {
             String selectedNote = noteSelector.getValue();
-            partitionView.ajouterNote(selectedNote);
+            String selectedDuree = dureeSelector.getValue();
+            partitionView.ajouterNote(selectedNote, selectedDuree);
             jouerSon(selectedNote);
         });
 
-        controls.getChildren().addAll(noteSelector, addNote);
+        controls.getChildren().addAll(noteSelector, dureeSelector, addNote);
 
         BorderPane root = new BorderPane();
         root.setTop(menuBar);
