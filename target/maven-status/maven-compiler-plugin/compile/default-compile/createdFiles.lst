@@ -1,6 +1,10 @@
 business\Note.class
 business\Metadonne.class
+ui\NoteRenderer.class
+audio\LecteurMIDI.class
+controller\PartitionController.class
+business\Mesure.class
+data\GestionFichier.class
 ui\PartitionView.class
 business\Partition.class
 ui\MainApp.class
-business\Mesure.class
