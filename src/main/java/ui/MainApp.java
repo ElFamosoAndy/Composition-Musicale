@@ -62,8 +62,10 @@ public class MainApp extends Application {
             partitionController.ajouterSilence(selectedDuree);
             partitionView.mettreAJourAffichage();
         });
+        Button lirePartition = new Button("Lire la partition");
+        lirePartition.setOnAction(e -> partitionController.lirePartition());
 
-        controls.getChildren().addAll(noteSelector, dureeSelector, addNote, addSilence);
+        controls.getChildren().addAll(noteSelector, dureeSelector, addNote, addSilence, lirePartition);
 
         BorderPane root = new BorderPane();
         root.setTop(menuBar);

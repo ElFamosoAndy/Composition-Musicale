@@ -1,8 +1,8 @@
 package audio;
 
-import business.Note;
+import business.*;
+
 import javax.sound.midi.*;
-import java.util.List;
 
 public class LecteurMIDI {
 
@@ -17,7 +17,9 @@ public class LecteurMIDI {
                 Synthesizer synth = MidiSystem.getSynthesizer();
                 synth.open();
                 MidiChannel[] channels = synth.getChannels();
-                channels[0].noteOn(noteMidi, 80);
+                if (!note.estSilence()) {
+                    channels[0].noteOn(noteMidi, 80);
+                }
                 Thread.sleep(dureeMidi);
                 channels[0].noteOff(noteMidi);
                 synth.close();
@@ -27,19 +29,28 @@ public class LecteurMIDI {
         }).start();
     }
 
-    public static void jouerPartition(List<Note> notes) {
+    public static void jouerPartition(Partition partition) {
         try {
             Synthesizer synth = MidiSystem.getSynthesizer();
             synth.open();
             MidiChannel[] channels = synth.getChannels();
 
-            for (Note note : notes) {
-                int hauteur = hauteurToInt(note.getHauteur());
-                int duree = dureeToInt(note.getDuree());
+            for (Mesure mesure : partition.getMesures()) {
+                for (Note note : mesure.getNotes()) {
+                    int noteMidi = hauteurToInt(note.getHauteur());
+                    int dureeMidi = dureeToInt(note.getDuree());
 
-                channels[0].noteOn(hauteur, 80);
-                Thread.sleep(duree);
-                channels[0].noteOff(hauteur);
+                    if (!note.estSilence()) {
+                        channels[0].noteOn(noteMidi, 80);
+                    }
+
+                    // Attendre la durée de la note ou du silence
+                    Thread.sleep(dureeMidi);
+
+                    if (!note.estSilence()) {
+                        channels[0].noteOff(noteMidi);
+                    }
+                }
             }
 
             synth.close();

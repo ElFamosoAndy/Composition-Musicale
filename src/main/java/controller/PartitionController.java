@@ -1,5 +1,6 @@
 package controller;
 
+import audio.LecteurMIDI;
 import business.*;
 import data.GestionFichier;
 
@@ -40,5 +41,9 @@ public class PartitionController {
         if (p != null) {
             this.partition = p;
         }
+    }
+
+    public void lirePartition() {
+        LecteurMIDI.jouerPartition(partition);
     }
 }
