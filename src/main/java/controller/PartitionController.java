@@ -23,13 +23,31 @@ public class PartitionController {
     }
 
     public void ajouterNote(String hauteur, String duree) {
+        Mesure mesureActuelle = partition.getMesures().get(partition.getMesures().size() - 1);
+        
+        if (!mesureActuelle.peutAjouterNote(duree)) {
+            System.out.println("⚠️ Mesure pleine ! Création d'une nouvelle mesure.");
+            mesureActuelle.completerAvecSilences();
+            mesureActuelle = new Mesure("4/4");
+            partition.getMesures().add(mesureActuelle);
+        }
+    
         Note note = new Note(hauteur, duree, false);
-        partition.getMesures().get(0).getNotes().add(note);
+        mesureActuelle.ajouterNote(note);
     }
 
     public void ajouterSilence(String duree) {
+        Mesure mesureActuelle = partition.getMesures().get(partition.getMesures().size() - 1);
+        
+        if (!mesureActuelle.peutAjouterNote(duree)) {
+            System.out.println("⚠️ Mesure pleine ! Création d'une nouvelle mesure.");
+            mesureActuelle.completerAvecSilences();
+            mesureActuelle = new Mesure("4/4");
+            partition.getMesures().add(mesureActuelle);
+        }
+    
         Note silence = new Note("Silence", duree, true);
-        partition.getMesures().get(0).getNotes().add(silence);
+        mesureActuelle.ajouterNote(silence);
     }
 
     public void sauvegarderPartition() {

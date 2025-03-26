@@ -1,0 +1,34 @@
+{
+  "metadonnes": {
+    "nom": "Nouvelle Partition"
+  },
+  "tempo": 60,
+  "armure": "Sol",
+  "mesures": [
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        }
+      ]
+    }
+  ]
+}

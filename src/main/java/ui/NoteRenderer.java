@@ -54,17 +54,17 @@ public class NoteRenderer {
         barresAigues.put("Fa aigu", 3);
     }
 
-    public static void dessinerNotes(GraphicsContext gc, List<Note> notes) {
-        int noteX = 100;
+    public static void dessinerNotes(GraphicsContext gc, List<Note> notes, int mesureX, int yOffset) {
+        int noteX = mesureX;
 
         for (Note note : notes) {
-            int noteY = note.estSilence() ? 160 : notesPositions.get(note.getHauteur());
+            int noteY = (note.estSilence() ? 160 : notesPositions.getOrDefault(note.getHauteur(), 150)) + yOffset;
             gc.setStroke(Color.BLACK);
             gc.setFill(Color.BLACK);
 
             if (note.estSilence()) {
                 // Dessiner le silence en fonction de la durée
-                dessinerSilence(gc, noteX, note.getDuree());
+                dessinerSilence(gc, noteX, note.getDuree(),yOffset);
             } else {
                 // Dessiner la note en fonction de la durée
                 dessinerNote(gc, noteX, noteY, durees.get(note.getDuree()));
@@ -111,18 +111,18 @@ public class NoteRenderer {
         }
     }
 
-    private static void dessinerSilence(GraphicsContext gc, int x, String duree) {
+    private static void dessinerSilence(GraphicsContext gc, int x, String duree, int yOffset) {
         System.out.println("silence");
         switch (duree) {
             case "Noire": //soupir
                 gc.setFont(new Font("Roboto", 90));
-                gc.fillText("𝄽", x, 195);
+                gc.fillText("𝄽", x, 195 + yOffset);
                 break;
             case "Blanche": //demi-pause
-                gc.fillRect(x, 160, 20, 10);
+                gc.fillRect(x, 160, 20, 10 + yOffset);
                 break;
             case "Ronde": //pause
-                gc.fillRect(x, 150, 20, 10);
+                gc.fillRect(x, 150, 20, 10 + yOffset);
                 break;
         }
     }
