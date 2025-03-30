@@ -6,9 +6,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser;
+import java.io.File;
 import audio.LecteurMIDI;
 import business.Note;
 import controller.PartitionController;
+import data.GestionFichier;
 
 public class MainApp extends Application {
     private PartitionController partitionController;
@@ -21,21 +24,96 @@ public class MainApp extends Application {
         partitionView = new PartitionView(partitionController);
         partitionView.mettreAJourAffichage();
 
+        // Champ de texte pour modifier le nom de la partition
+        TextField partitionNameField = new TextField(partitionController.getPartition().getMetadonnes().getNom());
+        partitionNameField.setMaxWidth(300);
+        partitionNameField.setAlignment(Pos.CENTER);
+        partitionNameField.setStyle("-fx-font-size: 24px; -fx-background-color: transparent; -fx-border-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        partitionNameField.setOnAction(e -> {
+            partitionController.getPartition().getMetadonnes().setNom(partitionNameField.getText());
+            primaryStage.setTitle(partitionNameField.getText());
+        });
+        partitionNameField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (!isNowFocused) {
+                partitionController.getPartition().getMetadonnes().setNom(partitionNameField.getText());
+                primaryStage.setTitle(partitionNameField.getText());
+            }
+        });
+
         primaryStage.setTitle(partitionController.getPartition().getMetadonnes().getNom());
 
         MenuBar menuBar = new MenuBar();
         Menu menuFile = new Menu("Fichier");
 
+        // "Enregistrer" : si le fichier n'existe pas, se comporte comme "Enregistrer sous"
         MenuItem savePartition = new MenuItem("Enregistrer");
-        savePartition.setOnAction(e -> partitionController.sauvegarderPartition());
+        savePartition.setOnAction(e -> {
+            String currentPath = partitionController.getCurrentFilePath();
+            if (currentPath == null || !(new File(currentPath).exists())) {
+                // Ouvrir un FileChooser pour choisir le fichier de sauvegarde
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Enregistrer la partition sous");
+                File defaultDir = new File("partitions");
+                if (!defaultDir.exists()) {
+                    defaultDir.mkdirs();
+                }
+                fileChooser.setInitialDirectory(defaultDir);
+                String sanitizedName = GestionFichier.sanitizeFilename(partitionController.getPartition().getMetadonnes().getNom());
+                if(sanitizedName.isEmpty()){
+                    sanitizedName = "NouvellePartition";
+                }
+                fileChooser.setInitialFileName(sanitizedName + ".json");
+                File file = fileChooser.showSaveDialog(primaryStage);
+                if (file != null) {
+                    partitionController.sauvegarderPartition(file.getAbsolutePath());
+                }
+            } else {
+                partitionController.sauvegarderPartition();
+            }
+        });
         
-        MenuItem loadPartition = new MenuItem("Charger");
-        loadPartition.setOnAction(e -> {
-            partitionController.chargerPartition();
-            partitionView.mettreAJourAffichage();
+        // "Enregistrer sous" : FileChooser pour choisir l'emplacement de sauvegarde
+        MenuItem savePartitionAs = new MenuItem("Enregistrer sous");
+        savePartitionAs.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Enregistrer la partition sous");
+            File defaultDir = new File("partitions");
+            if (!defaultDir.exists()) {
+                defaultDir.mkdirs();
+            }
+            fileChooser.setInitialDirectory(defaultDir);
+            String sanitizedName = GestionFichier.sanitizeFilename(partitionController.getPartition().getMetadonnes().getNom());
+            if(sanitizedName.isEmpty()){
+                sanitizedName = "NouvellePartition";
+            }
+            fileChooser.setInitialFileName(sanitizedName + ".json");
+            File file = fileChooser.showSaveDialog(primaryStage);
+            if (file != null) {
+                partitionController.sauvegarderPartition(file.getAbsolutePath());
+            }
+        });
+        
+        // "Ouvrir" : FileChooser pour charger une partition existante
+        MenuItem openPartition = new MenuItem("Ouvrir");
+        openPartition.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Ouvrir la partition");
+            File defaultDir = new File("partitions");
+            if (!defaultDir.exists()) {
+                defaultDir.mkdirs();
+            }
+            fileChooser.setInitialDirectory(defaultDir);
+            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Fichiers JSON (*.json)", "*.json");
+            fileChooser.getExtensionFilters().add(extFilter);
+            File file = fileChooser.showOpenDialog(primaryStage);
+            if (file != null) {
+                partitionController.chargerPartition(file.getAbsolutePath());
+                partitionNameField.setText(partitionController.getPartition().getMetadonnes().getNom());
+                partitionView.mettreAJourAffichage();
+            }
         });
 
-        menuFile.getItems().addAll(savePartition, loadPartition);
+        menuFile.getItems().addAll(savePartition, savePartitionAs, openPartition);
         menuBar.getMenus().add(menuFile);
 
         HBox controls = new HBox(10);
@@ -52,7 +130,7 @@ public class MainApp extends Application {
             String selectedNote = noteSelector.getValue();
             String selectedDuree = dureeSelector.getValue();
             partitionController.ajouterNote(selectedNote, selectedDuree);
-            LecteurMIDI.jouerNote(new Note(selectedNote, selectedDuree,false));
+            LecteurMIDI.jouerNote(new Note(selectedNote, selectedDuree, false));
             partitionView.mettreAJourAffichage();
         });
 
@@ -68,13 +146,11 @@ public class MainApp extends Application {
 
         controls.getChildren().addAll(noteSelector, dureeSelector, addNote, addSilence, lirePartition);
 
-        // Création d'un conteneur pour centrer la partition en haut
-        StackPane centerPane = new StackPane();
-        centerPane.getChildren().add(partitionView);
-        centerPane.setAlignment(Pos.TOP_CENTER); // Fixe la partition en haut et au centre
+        VBox partitionContainer = new VBox(10);
+        partitionContainer.getChildren().addAll(partitionNameField, partitionView);
+        partitionContainer.setAlignment(Pos.TOP_CENTER);
 
-        // Ajout du ScrollPane pour permettre le défilement vertical
-        ScrollPane scrollPane = new ScrollPane(centerPane);
+        ScrollPane scrollPane = new ScrollPane(partitionContainer);
         scrollPane.setFitToWidth(true);
         scrollPane.setPannable(true);
 
