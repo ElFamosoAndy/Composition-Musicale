@@ -7,6 +7,7 @@ import business.Note;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import audio.LecteurMIDI;
 
 public class NoteRenderer {
     private static final Map<String, Integer> notesPositions = new HashMap<>();
@@ -15,7 +16,7 @@ public class NoteRenderer {
     private static final Map<String, Integer> barresAigues = new HashMap<>();
     // Espacement constant entre les notes
     private static final int SPACING = 50;
-    // Largeur d'une mesure, définie dans PartitionView (valeur utilisée ici pour centrer)
+    // Largeur d'une mesure (utilisée ici pour centrer)
     private static final int MEASURE_WIDTH = 200;
 
     static {
@@ -58,16 +59,24 @@ public class NoteRenderer {
         barresAigues.put("Fa aigu", 3);
     }
 
-    public static void dessinerNotes(GraphicsContext gc, List<Note> notes, int mesureX, int yOffset) {
-        // Calcul du nombre de notes pour centrer le groupe dans la mesure
+    // Ajout d'un paramètre supplémentaire measureIndex pour connaître l'indice de la mesure dans la partition
+    public static void dessinerNotes(GraphicsContext gc, List<Note> notes, int mesureX, int yOffset, int measureIndex) {
         int noteCount = notes.size();
         int noteX = mesureX + (MEASURE_WIDTH - (noteCount * SPACING)) / 2;
 
-        for (Note note : notes) {
+        for (int i = 0; i < notes.size(); i++) {
+            Note note = notes.get(i);
             int noteY = (note.estSilence() ? 160 : notesPositions.getOrDefault(note.getHauteur(), 150)) + yOffset;
-            gc.setStroke(Color.BLACK);
-            gc.setFill(Color.BLACK);
-
+            
+            // Si la note correspond à celle en cours de lecture, changer la couleur
+            if (measureIndex == LecteurMIDI.currentMeasureIndex && i == LecteurMIDI.currentNoteIndex) {
+                gc.setFill(Color.web("007ACC"));
+                gc.setStroke(Color.web("007ACC"));
+            } else {
+                gc.setFill(Color.BLACK);
+                gc.setStroke(Color.BLACK);
+            }
+            
             if (note.estSilence()) {
                 dessinerSilence(gc, noteX, note.getDuree(), yOffset);
             } else {
@@ -80,14 +89,12 @@ public class NoteRenderer {
     }
 
     private static void dessinerLignesSupplementaires(GraphicsContext gc, int noteX, String note, int yOffset) {
-        // Lignes supplémentaires en bas (notes graves)
         if (barresGraves.containsKey(note)) {
             for (int i = 0; i < barresGraves.get(note); i++) {
                 gc.strokeLine(noteX, 230 + (i * 20) + yOffset, noteX + 37, 230 + (i * 20) + yOffset);
             }
         }
     
-        // Lignes supplémentaires en haut (notes aiguës)
         if (barresAigues.containsKey(note)) {
             for (int i = 0; i < barresAigues.get(note); i++) {
                 gc.strokeLine(noteX, 110 - (i * 20) + yOffset, noteX + 37, 110 - (i * 20) + yOffset);
@@ -115,15 +122,15 @@ public class NoteRenderer {
 
     private static void dessinerSilence(GraphicsContext gc, int x, String duree, int yOffset) {
         switch (duree) {
-            case "Noire": // soupir
+            case "Noire": 
                 gc.setFont(new Font("Roboto", 90));
                 gc.fillText("𝄽", x, 195 + yOffset);
                 break;
-            case "Blanche": // demi-pause
-                gc.fillRect(x + 10, 160+ yOffset, 20, 10);
+            case "Blanche": 
+                gc.fillRect(x + 10, 160 + yOffset, 20, 10);
                 break;
-            case "Ronde": // pause
-                gc.fillRect(x + 10, 150+ yOffset, 20, 10 );
+            case "Ronde": 
+                gc.fillRect(x + 10, 150 + yOffset, 20, 10);
                 break;
         }
     }

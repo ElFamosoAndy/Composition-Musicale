@@ -4,6 +4,7 @@ ui\NoteRenderer.class
 audio\LecteurMIDI.class
 controller\PartitionController.class
 business\Mesure.class
+ui\PartitionView$1.class
 data\GestionFichier.class
 ui\PartitionView.class
 business\Partition.class

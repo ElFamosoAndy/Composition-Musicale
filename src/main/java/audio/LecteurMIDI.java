@@ -8,6 +8,9 @@ public class LecteurMIDI {
 
     // Thread de lecture en cours
     private static Thread playbackThread;
+    // Indices de la note en cours de lecture (-1 signifie aucune note)
+    public static int currentMeasureIndex = -1;
+    public static int currentNoteIndex = -1;
 
     public static void jouerNote(Note note, int tempo) {
         int noteMidi = hauteurToInt(note.getHauteur());
@@ -40,12 +43,17 @@ public class LecteurMIDI {
                 Synthesizer synth = MidiSystem.getSynthesizer();
                 synth.open();
                 MidiChannel[] channels = synth.getChannels();
-                outer:
-                for (Mesure mesure : partition.getMesures()) {
-                    for (Note note : mesure.getNotes()) {
+                for (int m = 0; m < partition.getMesures().size(); m++) {
+                    // Mettre à jour l'indice de la mesure en cours
+                    currentMeasureIndex = m;
+                    Mesure mesure = partition.getMesures().get(m);
+                    for (int n = 0; n < mesure.getNotes().size(); n++) {
+                        // Mettre à jour l'indice de la note en cours
+                        currentNoteIndex = n;
                         if (Thread.currentThread().isInterrupted()) {
-                            break outer;
+                            break;
                         }
+                        Note note = mesure.getNotes().get(n);
                         int noteMidi = hauteurToInt(note.getHauteur());
                         int baseDuration = dureeToInt(note.getDuree());
                         int adjustedDuration = (int)(baseDuration * (60.0 / tempo));
@@ -64,6 +72,9 @@ public class LecteurMIDI {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
+                // Réinitialiser les indices lorsque la lecture est terminée
+                currentMeasureIndex = -1;
+                currentNoteIndex = -1;
                 playbackThread = null;
             }
         });
@@ -74,6 +85,8 @@ public class LecteurMIDI {
         if (playbackThread != null) {
             playbackThread.interrupt();
             playbackThread = null;
+            currentMeasureIndex = -1;
+            currentNoteIndex = -1;
         }
     }
     

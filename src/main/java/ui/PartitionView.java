@@ -1,5 +1,6 @@
 package ui;
 
+import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -13,11 +14,37 @@ public class PartitionView extends Canvas {
     private static final int LARGEUR_MESURE = 200; // Largeur d'une mesure
     private static final int HAUTEUR_LIGNE = 275; // Hauteur entre deux lignes
     private static final int MARGES_SUP_INF = 50; // Marges au-dessus et en dessous
+    
+    // AnimationTimer pour rafraîchir l'affichage en continu
+    private AnimationTimer animationTimer;
 
     public PartitionView(PartitionController controller) {
         super(1000, 625); // Largeur fixe, mais hauteur ajustée dynamiquement
         this.partitionController = controller;
         this.gc = this.getGraphicsContext2D();
+    }
+    
+    // Démarre l'animation (à appeler lors du début de la lecture)
+    public void startAnimation() {
+        if (animationTimer == null) {
+            animationTimer = new AnimationTimer() {
+                @Override
+                public void handle(long now) {
+                    mettreAJourAffichage();
+                }
+            };
+            animationTimer.start();
+        }
+    }
+    
+    // Arrête l'animation (à appeler lorsque la lecture s'arrête)
+    public void stopAnimation() {
+        if (animationTimer != null) {
+            animationTimer.stop();
+            animationTimer = null;
+            // Pour être sûr de redessiner l'affichage final sans indication de lecture
+            mettreAJourAffichage();
+        }
     }
 
     public void mettreAJourAffichage() {
@@ -44,7 +71,8 @@ public class PartitionView extends Canvas {
             for (int i = 0; i < mesuresSurLigne; i++) {
                 int mesureX = 100 + (i * LARGEUR_MESURE); // Position horizontale de la mesure
                 
-                NoteRenderer.dessinerNotes(gc, partitionController.getPartition().getMesures().get(mesureIndex).getNotes(), mesureX, yOffset);
+                // Passage de l'indice de la mesure pour le suivi de lecture
+                NoteRenderer.dessinerNotes(gc, partitionController.getPartition().getMesures().get(mesureIndex).getNotes(), mesureX, yOffset, mesureIndex);
 
                 boolean estDerniereMesure = (mesureIndex == totalMesures - 1);
                 dessinerBarresDeMesure(mesureX, yOffset, estDerniereMesure);

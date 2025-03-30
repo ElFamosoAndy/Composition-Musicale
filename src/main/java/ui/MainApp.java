@@ -183,6 +183,8 @@ public class MainApp extends Application {
         playToggleButton.setOnAction(e -> {
             if (playToggleButton.getText().equals("Lire la partition")) {
                 partitionController.lirePartition();
+                // Démarrer l'animation pour mettre à jour l'affichage en continu
+                partitionView.startAnimation();
                 playToggleButton.setText("Arrêter la lecture");
                 new Thread(() -> {
                     while (LecteurMIDI.isPlaying()) {
@@ -192,10 +194,15 @@ public class MainApp extends Application {
                             break;
                         }
                     }
-                    Platform.runLater(() -> playToggleButton.setText("Lire la partition"));
+                    // Lorsque la lecture se termine, arrêter l'animation et réinitialiser le bouton
+                    Platform.runLater(() -> {
+                        partitionView.stopAnimation();
+                        playToggleButton.setText("Lire la partition");
+                    });
                 }).start();
             } else {
                 LecteurMIDI.stopPlayback();
+                partitionView.stopAnimation();
                 playToggleButton.setText("Lire la partition");
             }
         });
