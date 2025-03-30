@@ -40,12 +40,28 @@ public class MainApp extends Application {
             }
         });
 
+        // Nouveau champ pour saisir l'auteur (compositeur)
+        TextField authorField = new TextField(
+            partitionController.getPartition().getMetadonnes().getCompositeur() != null ?
+            partitionController.getPartition().getMetadonnes().getCompositeur() : "");
+        authorField.setMaxWidth(300);
+        authorField.setAlignment(Pos.CENTER);
+        authorField.setPromptText("Auteur");
+        authorField.setStyle("-fx-font-size: 16px; -fx-background-color: transparent; -fx-border-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        authorField.setOnAction(e -> {
+            partitionController.getPartition().getMetadonnes().setCompositeur(authorField.getText());
+        });
+        authorField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (!isNowFocused) {
+                partitionController.getPartition().getMetadonnes().setCompositeur(authorField.getText());
+            }
+        });
+
         primaryStage.setTitle(partitionController.getPartition().getMetadonnes().getNom());
 
         // Contrôle de tempo via un Spinner numérique avec bords invisibles
         Label tempoLabel = new Label("Tempo :");
         Spinner<Integer> tempoSpinner = new Spinner<>(40, 200, partitionController.getPartition().getTempo());
-        // Supprimer les bordures du champ d'édition
         tempoSpinner.getEditor().setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
         tempoSpinner.valueProperty().addListener((obs, oldValue, newValue) -> {
             partitionController.getPartition().setTempo(newValue);
@@ -119,6 +135,7 @@ public class MainApp extends Application {
             if (file != null) {
                 partitionController.chargerPartition(file.getAbsolutePath());
                 partitionNameField.setText(partitionController.getPartition().getMetadonnes().getNom());
+                authorField.setText(partitionController.getPartition().getMetadonnes().getCompositeur());
                 partitionView.mettreAJourAffichage();
             }
         });
@@ -157,9 +174,9 @@ public class MainApp extends Application {
 
         controls.getChildren().addAll(noteSelector, dureeSelector, addNote, addSilence, lirePartition);
 
-        // Regrouper le titre, le contrôle de tempo et la partition
+        // Regrouper le titre, le champ auteur, le contrôle de tempo et la partition
         VBox partitionContainer = new VBox(10);
-        partitionContainer.getChildren().addAll(partitionNameField, tempoBox, partitionView);
+        partitionContainer.getChildren().addAll(partitionNameField, authorField, tempoBox, partitionView);
         partitionContainer.setAlignment(Pos.TOP_CENTER);
 
         ScrollPane scrollPane = new ScrollPane(partitionContainer);
