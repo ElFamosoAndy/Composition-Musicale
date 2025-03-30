@@ -71,27 +71,28 @@ public class NoteRenderer {
             }
 
             // Dessiner les lignes supplémentaires pour les notes graves et aiguës
-            dessinerLignesSupplementaires(gc, noteX, note.getHauteur());
-
+            dessinerLignesSupplementaires(gc, noteX, note.getHauteur(), yOffset);
+            
             noteX += 50; // Espacement entre les notes
         }
     }
 
-    private static void dessinerLignesSupplementaires(GraphicsContext gc, int noteX, String note) {
+    private static void dessinerLignesSupplementaires(GraphicsContext gc, int noteX, String note, int yOffset) {
         // Lignes supplémentaires en bas (notes graves)
         if (barresGraves.containsKey(note)) {
             for (int i = 0; i < barresGraves.get(note); i++) {
-                gc.strokeLine(noteX, 230 + (i * 20), noteX + 37, 230 + (i * 20));
+                gc.strokeLine(noteX, 230 + (i * 20) + yOffset, noteX + 37, 230 + (i * 20) + yOffset);
             }
         }
-
+    
         // Lignes supplémentaires en haut (notes aiguës)
         if (barresAigues.containsKey(note)) {
             for (int i = 0; i < barresAigues.get(note); i++) {
-                gc.strokeLine(noteX, 110 - (i * 20), noteX + 37, 110 - (i * 20));
+                gc.strokeLine(noteX, 110 - (i * 20) + yOffset, noteX + 37, 110 - (i * 20) + yOffset);
             }
         }
     }
+    
 
     private static void dessinerNote(GraphicsContext gc, int x, int y, int duree) {
         gc.setLineWidth(2);

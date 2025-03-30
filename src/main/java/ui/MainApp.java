@@ -1,10 +1,10 @@
 package ui;
 
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import audio.LecteurMIDI;
 import business.Note;
@@ -19,7 +19,6 @@ public class MainApp extends Application {
 
         partitionController = new PartitionController();
         partitionView = new PartitionView(partitionController);
-
         partitionView.mettreAJourAffichage();
 
         primaryStage.setTitle(partitionController.getPartition().getMetadonnes().getNom());
@@ -56,23 +55,35 @@ public class MainApp extends Application {
             LecteurMIDI.jouerNote(new Note(selectedNote, selectedDuree,false));
             partitionView.mettreAJourAffichage();
         });
+
         Button addSilence = new Button("Ajouter Silence");
         addSilence.setOnAction(e -> {
             String selectedDuree = dureeSelector.getValue();
             partitionController.ajouterSilence(selectedDuree);
             partitionView.mettreAJourAffichage();
         });
+
         Button lirePartition = new Button("Lire la partition");
         lirePartition.setOnAction(e -> partitionController.lirePartition());
 
         controls.getChildren().addAll(noteSelector, dureeSelector, addNote, addSilence, lirePartition);
 
+        // Création d'un conteneur pour centrer la partition en haut
+        StackPane centerPane = new StackPane();
+        centerPane.getChildren().add(partitionView);
+        centerPane.setAlignment(Pos.TOP_CENTER); // Fixe la partition en haut et au centre
+
+        // Ajout du ScrollPane pour permettre le défilement vertical
+        ScrollPane scrollPane = new ScrollPane(centerPane);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPannable(true);
+
         BorderPane root = new BorderPane();
         root.setTop(menuBar);
-        root.setCenter(partitionView);
+        root.setCenter(scrollPane);
         root.setBottom(controls);
 
-        Scene scene = new Scene(root, 800, 400);
+        Scene scene = new Scene(root, 800, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
