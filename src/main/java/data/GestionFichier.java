@@ -9,33 +9,38 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class GestionFichier {
+    // Répertoire par défaut où les partitions sont enregistrées
     private static final String DEFAULT_DIRECTORY = "partitions";
+
+    // Objet Gson pour convertir Java ↔ JSON avec un affichage bien indenté
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     /**
-     * Méthode utilitaire pour nettoyer le nom du fichier.
-     * Supprime les caractères interdits: \ / : * ? " < > |
+     * Nettoie le nom du fichier : supprime les caractères interdits pour les noms de fichier
      */
     public static String sanitizeFilename(String name) {
         return name.replaceAll("[\\\\/:*?\"<>|]", "");
     }
 
     /**
-     * Sauvegarde une partition en fichier JSON dans le répertoire par défaut,
-     * en utilisant le nom de la partition (après nettoyage) suivi de ".json".
-     * @param partition Partition à sauvegarder
+     * Sauvegarde une partition dans le dossier par défaut (en utilisant son nom comme nom de fichier)
      */
     public static void sauvegarderPartition(Partition partition) {
-        // S'assurer que le répertoire par défaut existe
+        // Crée le dossier "partitions" s'il n'existe pas
         File dir = new File(DEFAULT_DIRECTORY);
         if (!dir.exists()) {
             dir.mkdirs();
         }
+
+        // Nettoie le nom du fichier
         String sanitizedName = sanitizeFilename(partition.getMetadonnes().getNom());
         if (sanitizedName.isEmpty()) {
             sanitizedName = "NouvellePartition";
         }
+
         String filePath = DEFAULT_DIRECTORY + "/" + sanitizedName + ".json";
+
+        // Écrit le fichier JSON
         try (FileWriter writer = new FileWriter(filePath)) {
             gson.toJson(partition, writer);
             System.out.println("Partition sauvegardée avec succès dans " + filePath + " !");
@@ -45,9 +50,8 @@ public class GestionFichier {
     }
 
     /**
-     * Charge une partition depuis un fichier JSON situé dans le répertoire par défaut.
-     * Ici, on suppose par défaut que le fichier s'appelle "NouvellePartition.json".
-     * @return Partition chargée, ou null en cas d'erreur
+     * Charge une partition depuis un fichier JSON du répertoire par défaut
+     * (par défaut : "partitions/NouvellePartition.json")
      */
     public static Partition chargerPartition() {
         String filePath = DEFAULT_DIRECTORY + "/NouvellePartition.json";
@@ -60,17 +64,17 @@ public class GestionFichier {
     }
 
     /**
-     * Sauvegarde une partition en fichier JSON dans le chemin spécifié.
-     * @param partition Partition à sauvegarder
-     * @param filePath Chemin complet du fichier
+     * Sauvegarde une partition dans un fichier spécifique (utilisé pour "Enregistrer sous")
      */
     public static void sauvegarderPartition(Partition partition, String filePath) {
-        // S'assurer que le répertoire du fichier existe
+        // Vérifie si le dossier parent existe, sinon le crée
         File file = new File(filePath);
         File parentDir = file.getParentFile();
         if (parentDir != null && !parentDir.exists()) {
             parentDir.mkdirs();
         }
+
+        // Écrit le fichier JSON
         try (FileWriter writer = new FileWriter(filePath)) {
             gson.toJson(partition, writer);
             System.out.println("Partition sauvegardée avec succès dans " + filePath + " !");
@@ -80,9 +84,7 @@ public class GestionFichier {
     }
 
     /**
-     * Charge une partition depuis un fichier JSON dans le chemin spécifié.
-     * @param filePath Chemin complet du fichier
-     * @return Partition chargée, ou null en cas d'erreur
+     * Charge une partition à partir d’un fichier JSON donné
      */
     public static Partition chargerPartition(String filePath) {
         try (FileReader reader = new FileReader(filePath)) {

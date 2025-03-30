@@ -1,5 +1,6 @@
 package ui;
 
+// Importations JavaFX pour l'interface graphique
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -11,15 +12,19 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+// Importations standards Java et AWT
 import java.io.File;
 import java.io.IOException;
 import java.awt.image.BufferedImage;
+
+// Importations internes du projet
 import audio.LecteurMIDI;
 import business.Note;
 import controller.PartitionController;
 import data.GestionFichier;
 
-// Importations pour PDFBox
+// Importations pour générer le PDF avec PDFBox
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -28,14 +33,16 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 
 public class MainApp extends Application {
+    // Contrôleur central de la partition
     private PartitionController partitionController;
+    // Vue graphique de la partition (canvas personnalisé)
     private PartitionView partitionView;
-    // Nouveau conteneur incluant le titre, l'auteur, le tempo et la partition
+    // Conteneur principal contenant toutes les infos visibles (titre, auteur, tempo, notes...)
     private VBox partitionContainer;
 
     @Override
     public void start(Stage primaryStage) {
-
+        // Initialisation du contrôleur et de la vue
         partitionController = new PartitionController();
         partitionView = new PartitionView(partitionController);
         partitionView.mettreAJourAffichage();
@@ -207,7 +214,7 @@ public class MainApp extends Application {
         noteSelector.setValue("Do");
 
         ComboBox<String> dureeSelector = new ComboBox<>();
-        dureeSelector.getItems().addAll("Croche", "Noire", "Blanche", "Ronde");
+        dureeSelector.getItems().addAll("Noire", "Blanche", "Ronde");
         dureeSelector.setValue("Noire");
 
         Button addNote = new Button("Ajouter Note");
