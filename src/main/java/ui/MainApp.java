@@ -3,34 +3,21 @@ package ui;
 // Importations JavaFX pour l'interface graphique
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 // Importations standards Java et AWT
 import java.io.File;
-import java.io.IOException;
-import java.awt.image.BufferedImage;
 
 // Importations internes du projet
 import audio.LecteurMIDI;
 import business.Note;
 import controller.PartitionController;
 import data.GestionFichier;
-
-// Importations pour générer le PDF avec PDFBox
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 
 public class MainApp extends Application {
     // Contrôleur central de la partition
@@ -201,7 +188,7 @@ public class MainApp extends Application {
             fileChooser.getExtensionFilters().add(extFilter);
             File file = fileChooser.showSaveDialog(primaryStage);
             if (file != null) {
-                exportToPDF(file);
+                GestionFichier.exporterEnPDF(partitionContainer, file);
             }
         });
         
@@ -281,41 +268,6 @@ public class MainApp extends Application {
         Scene scene = new Scene(root, 800, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
-    }
-    
-    // Méthode pour exporter le conteneur en PDF au format A4
-    private void exportToPDF(File file) {
-        // Capturer un snapshot du conteneur
-        WritableImage snapshot = partitionContainer.snapshot(new SnapshotParameters(), null);
-        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(snapshot, null);
-        
-        try (PDDocument document = new PDDocument()) {
-            // Utiliser le format A4 pour la page PDF
-            PDRectangle a4 = PDRectangle.A4;
-            PDPage page = new PDPage(a4);
-            document.addPage(page);
-            
-            // Calculer le facteur de redimensionnement pour que l'image rentre dans la page A4
-            float scaleX = a4.getWidth() / bufferedImage.getWidth();
-            float scaleY = a4.getHeight() / bufferedImage.getHeight();
-            float scale = Math.min(scaleX, scaleY);
-            float imageWidth = bufferedImage.getWidth() * scale;
-            float imageHeight = bufferedImage.getHeight() * scale;
-            // Positionner l'image en haut au centre : centrer horizontalement et placer l'image en haut avec une marge de 20
-            float posX = (a4.getWidth() - imageWidth) / 2;
-            float marginTop = 20;
-            float posY = a4.getHeight() - imageHeight - marginTop;
-            
-            PDImageXObject pdImage = LosslessFactory.createFromImage(document, bufferedImage);
-            
-            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                contentStream.drawImage(pdImage, posX, posY, imageWidth, imageHeight);
-            }
-            
-            document.save(file);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
     }
 
     public static void main(String[] args) {
