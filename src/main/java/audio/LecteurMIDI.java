@@ -6,6 +6,9 @@ import javax.sound.midi.*;
 
 public class LecteurMIDI {
 
+    // Thread de lecture en cours
+    private static Thread playbackThread;
+
     public static void jouerNote(Note note, int tempo) {
         int noteMidi = hauteurToInt(note.getHauteur());
         int baseDuration = dureeToInt(note.getDuree()); // durée pour 60 BPM
@@ -30,31 +33,52 @@ public class LecteurMIDI {
     }
 
     public static void jouerPartition(Partition partition) {
+        stopPlayback(); // S'assurer qu'aucune lecture n'est en cours
         int tempo = partition.getTempo();
-        try {
-            Synthesizer synth = MidiSystem.getSynthesizer();
-            synth.open();
-            MidiChannel[] channels = synth.getChannels();
-
-            for (Mesure mesure : partition.getMesures()) {
-                for (Note note : mesure.getNotes()) {
-                    int noteMidi = hauteurToInt(note.getHauteur());
-                    int baseDuration = dureeToInt(note.getDuree());
-                    int adjustedDuration = (int)(baseDuration * (60.0 / tempo));
-                    
-                    if (!note.estSilence()) {
-                        channels[0].noteOn(noteMidi, 80);
-                    }
-                    Thread.sleep(adjustedDuration);
-                    if (!note.estSilence()) {
-                        channels[0].noteOff(noteMidi);
+        playbackThread = new Thread(() -> {
+            try {
+                Synthesizer synth = MidiSystem.getSynthesizer();
+                synth.open();
+                MidiChannel[] channels = synth.getChannels();
+                outer:
+                for (Mesure mesure : partition.getMesures()) {
+                    for (Note note : mesure.getNotes()) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break outer;
+                        }
+                        int noteMidi = hauteurToInt(note.getHauteur());
+                        int baseDuration = dureeToInt(note.getDuree());
+                        int adjustedDuration = (int)(baseDuration * (60.0 / tempo));
+                        if (!note.estSilence()) {
+                            channels[0].noteOn(noteMidi, 80);
+                        }
+                        Thread.sleep(adjustedDuration);
+                        if (!note.estSilence()) {
+                            channels[0].noteOff(noteMidi);
+                        }
                     }
                 }
+                synth.close();
+            } catch (InterruptedException e) {
+                // Lecture interrompue
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                playbackThread = null;
             }
-            synth.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        });
+        playbackThread.start();
+    }
+
+    public static void stopPlayback() {
+        if (playbackThread != null) {
+            playbackThread.interrupt();
+            playbackThread = null;
         }
+    }
+    
+    public static boolean isPlaying() {
+        return playbackThread != null;
     }
 
     private static int hauteurToInt(String hauteur) {
@@ -84,6 +108,7 @@ public class LecteurMIDI {
 
     private static int dureeToInt(String duree) {
         return switch (duree) {
+            case "Croche" -> 500;
             case "Noire" -> 1000;
             case "Blanche" -> 2000;
             case "Ronde" -> 4000;

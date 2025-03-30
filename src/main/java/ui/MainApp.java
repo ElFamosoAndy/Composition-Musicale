@@ -1,6 +1,7 @@
 package ui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -24,7 +25,7 @@ public class MainApp extends Application {
         partitionView = new PartitionView(partitionController);
         partitionView.mettreAJourAffichage();
 
-        // Champ de texte pour modifier le nom de la partition
+        // Champ de texte pour le nom de la partition
         TextField partitionNameField = new TextField(partitionController.getPartition().getMetadonnes().getNom());
         partitionNameField.setMaxWidth(300);
         partitionNameField.setAlignment(Pos.CENTER);
@@ -60,7 +61,7 @@ public class MainApp extends Application {
 
         primaryStage.setTitle(partitionController.getPartition().getMetadonnes().getNom());
 
-        // Contrôle de tempo via un Spinner numérique avec bords invisibles
+        // Contrôle de tempo via un Spinner
         Label tempoLabel = new Label("Tempo :");
         Spinner<Integer> tempoSpinner = new Spinner<>(40, 200, partitionController.getPartition().getTempo());
         tempoSpinner.getEditor().setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
@@ -73,7 +74,7 @@ public class MainApp extends Application {
         MenuBar menuBar = new MenuBar();
         Menu menuFile = new Menu("Fichier");
 
-        // "Enregistrer" : si le fichier n'existe pas, se comporte comme "Enregistrer sous"
+        // "Enregistrer"
         MenuItem savePartition = new MenuItem("Enregistrer");
         savePartition.setOnAction(e -> {
             String currentPath = partitionController.getCurrentFilePath();
@@ -99,7 +100,7 @@ public class MainApp extends Application {
             }
         });
         
-        // "Enregistrer sous" : FileChooser pour choisir l'emplacement de sauvegarde
+        // "Enregistrer sous"
         MenuItem savePartitionAs = new MenuItem("Enregistrer sous");
         savePartitionAs.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
@@ -120,7 +121,7 @@ public class MainApp extends Application {
             }
         });
         
-        // "Ouvrir" : FileChooser pour charger une partition existante
+        // "Ouvrir"
         MenuItem openPartition = new MenuItem("Ouvrir");
         openPartition.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
@@ -137,6 +138,7 @@ public class MainApp extends Application {
                 partitionController.chargerPartition(file.getAbsolutePath());
                 partitionNameField.setText(partitionController.getPartition().getMetadonnes().getNom());
                 authorField.setText(partitionController.getPartition().getMetadonnes().getCompositeur());
+                tempoSpinner.getValueFactory().setValue(partitionController.getPartition().getTempo());
                 partitionView.mettreAJourAffichage();
             }
         });
@@ -150,7 +152,7 @@ public class MainApp extends Application {
         noteSelector.setValue("Do");
 
         ComboBox<String> dureeSelector = new ComboBox<>();
-        dureeSelector.getItems().addAll("Croche", "Noire", "Blanche", "Ronde");
+        dureeSelector.getItems().addAll("Noire", "Blanche", "Ronde");
         dureeSelector.setValue("Noire");
 
         Button addNote = new Button("Ajouter Note");
@@ -169,17 +171,36 @@ public class MainApp extends Application {
             partitionView.mettreAJourAffichage();
         });
         
-        // Nouveau bouton pour revenir en arrière
+        // Bouton pour revenir en arrière
         Button undoButton = new Button("Revenir en arrière");
         undoButton.setOnAction(e -> {
             partitionController.revenirEnArriere();
             partitionView.mettreAJourAffichage();
         });
+        
+        // Bouton pour lire/arrêter la partition avec synchronisation de l'état
+        Button playToggleButton = new Button("Lire la partition");
+        playToggleButton.setOnAction(e -> {
+            if (playToggleButton.getText().equals("Lire la partition")) {
+                partitionController.lirePartition();
+                playToggleButton.setText("Arrêter la lecture");
+                new Thread(() -> {
+                    while (LecteurMIDI.isPlaying()) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ex) {
+                            break;
+                        }
+                    }
+                    Platform.runLater(() -> playToggleButton.setText("Lire la partition"));
+                }).start();
+            } else {
+                LecteurMIDI.stopPlayback();
+                playToggleButton.setText("Lire la partition");
+            }
+        });
 
-        Button lirePartition = new Button("Lire la partition");
-        lirePartition.setOnAction(e -> partitionController.lirePartition());
-
-        controls.getChildren().addAll(noteSelector, dureeSelector, addNote, addSilence, undoButton, lirePartition);
+        controls.getChildren().addAll(noteSelector, dureeSelector, addNote, addSilence, undoButton, playToggleButton);
 
         VBox partitionContainer = new VBox(10);
         partitionContainer.getChildren().addAll(partitionNameField, authorField, tempoBox, partitionView);
