@@ -6,11 +6,11 @@ import javax.sound.midi.*;
 
 public class LecteurMIDI {
 
-    public static void jouerNote(Note note) {
+    public static void jouerNote(Note note, int tempo) {
         int noteMidi = hauteurToInt(note.getHauteur());
-        int dureeMidi = dureeToInt(note.getDuree());
-
-        if (noteMidi == -1 || dureeMidi == -1) return;
+        int baseDuration = dureeToInt(note.getDuree()); // durée pour 60 BPM
+        int adjustedDuration = (int)(baseDuration * (60.0 / tempo));
+        if (noteMidi == -1 || baseDuration == -1) return;
 
         new Thread(() -> {
             try {
@@ -20,7 +20,7 @@ public class LecteurMIDI {
                 if (!note.estSilence()) {
                     channels[0].noteOn(noteMidi, 80);
                 }
-                Thread.sleep(dureeMidi);
+                Thread.sleep(adjustedDuration);
                 channels[0].noteOff(noteMidi);
                 synth.close();
             } catch (Exception e) {
@@ -30,6 +30,7 @@ public class LecteurMIDI {
     }
 
     public static void jouerPartition(Partition partition) {
+        int tempo = partition.getTempo();
         try {
             Synthesizer synth = MidiSystem.getSynthesizer();
             synth.open();
@@ -38,21 +39,18 @@ public class LecteurMIDI {
             for (Mesure mesure : partition.getMesures()) {
                 for (Note note : mesure.getNotes()) {
                     int noteMidi = hauteurToInt(note.getHauteur());
-                    int dureeMidi = dureeToInt(note.getDuree());
-
+                    int baseDuration = dureeToInt(note.getDuree());
+                    int adjustedDuration = (int)(baseDuration * (60.0 / tempo));
+                    
                     if (!note.estSilence()) {
                         channels[0].noteOn(noteMidi, 80);
                     }
-
-                    // Attendre la durée de la note ou du silence
-                    Thread.sleep(dureeMidi);
-
+                    Thread.sleep(adjustedDuration);
                     if (!note.estSilence()) {
                         channels[0].noteOff(noteMidi);
                     }
                 }
             }
-
             synth.close();
         } catch (Exception e) {
             e.printStackTrace();

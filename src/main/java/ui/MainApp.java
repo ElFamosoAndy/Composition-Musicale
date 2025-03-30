@@ -42,6 +42,17 @@ public class MainApp extends Application {
 
         primaryStage.setTitle(partitionController.getPartition().getMetadonnes().getNom());
 
+        // Contrôle de tempo via un Spinner numérique avec bords invisibles
+        Label tempoLabel = new Label("Tempo :");
+        Spinner<Integer> tempoSpinner = new Spinner<>(40, 200, partitionController.getPartition().getTempo());
+        // Supprimer les bordures du champ d'édition
+        tempoSpinner.getEditor().setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+        tempoSpinner.valueProperty().addListener((obs, oldValue, newValue) -> {
+            partitionController.getPartition().setTempo(newValue);
+        });
+        HBox tempoBox = new HBox(10, tempoLabel, tempoSpinner);
+        tempoBox.setAlignment(Pos.CENTER);
+
         MenuBar menuBar = new MenuBar();
         Menu menuFile = new Menu("Fichier");
 
@@ -50,7 +61,6 @@ public class MainApp extends Application {
         savePartition.setOnAction(e -> {
             String currentPath = partitionController.getCurrentFilePath();
             if (currentPath == null || !(new File(currentPath).exists())) {
-                // Ouvrir un FileChooser pour choisir le fichier de sauvegarde
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Enregistrer la partition sous");
                 File defaultDir = new File("partitions");
@@ -59,7 +69,7 @@ public class MainApp extends Application {
                 }
                 fileChooser.setInitialDirectory(defaultDir);
                 String sanitizedName = GestionFichier.sanitizeFilename(partitionController.getPartition().getMetadonnes().getNom());
-                if(sanitizedName.isEmpty()){
+                if (sanitizedName.isEmpty()) {
                     sanitizedName = "NouvellePartition";
                 }
                 fileChooser.setInitialFileName(sanitizedName + ".json");
@@ -83,7 +93,7 @@ public class MainApp extends Application {
             }
             fileChooser.setInitialDirectory(defaultDir);
             String sanitizedName = GestionFichier.sanitizeFilename(partitionController.getPartition().getMetadonnes().getNom());
-            if(sanitizedName.isEmpty()){
+            if (sanitizedName.isEmpty()) {
                 sanitizedName = "NouvellePartition";
             }
             fileChooser.setInitialFileName(sanitizedName + ".json");
@@ -130,7 +140,8 @@ public class MainApp extends Application {
             String selectedNote = noteSelector.getValue();
             String selectedDuree = dureeSelector.getValue();
             partitionController.ajouterNote(selectedNote, selectedDuree);
-            LecteurMIDI.jouerNote(new Note(selectedNote, selectedDuree, false));
+            // Utilisation du tempo actuel pour jouer la note
+            LecteurMIDI.jouerNote(new Note(selectedNote, selectedDuree, false), partitionController.getPartition().getTempo());
             partitionView.mettreAJourAffichage();
         });
 
@@ -146,8 +157,9 @@ public class MainApp extends Application {
 
         controls.getChildren().addAll(noteSelector, dureeSelector, addNote, addSilence, lirePartition);
 
+        // Regrouper le titre, le contrôle de tempo et la partition
         VBox partitionContainer = new VBox(10);
-        partitionContainer.getChildren().addAll(partitionNameField, partitionView);
+        partitionContainer.getChildren().addAll(partitionNameField, tempoBox, partitionView);
         partitionContainer.setAlignment(Pos.TOP_CENTER);
 
         ScrollPane scrollPane = new ScrollPane(partitionContainer);

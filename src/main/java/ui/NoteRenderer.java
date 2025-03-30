@@ -13,6 +13,10 @@ public class NoteRenderer {
     private static final Map<String, Integer> durees = new HashMap<>();
     private static final Map<String, Integer> barresGraves = new HashMap<>();
     private static final Map<String, Integer> barresAigues = new HashMap<>();
+    // Espacement constant entre les notes
+    private static final int SPACING = 50;
+    // Largeur d'une mesure, définie dans PartitionView (valeur utilisée ici pour centrer)
+    private static final int MEASURE_WIDTH = 200;
 
     static {
         // Positions des notes
@@ -55,7 +59,9 @@ public class NoteRenderer {
     }
 
     public static void dessinerNotes(GraphicsContext gc, List<Note> notes, int mesureX, int yOffset) {
-        int noteX = mesureX;
+        // Calcul du nombre de notes pour centrer le groupe dans la mesure
+        int noteCount = notes.size();
+        int noteX = mesureX + (MEASURE_WIDTH - (noteCount * SPACING)) / 2;
 
         for (Note note : notes) {
             int noteY = (note.estSilence() ? 160 : notesPositions.getOrDefault(note.getHauteur(), 150)) + yOffset;
@@ -63,17 +69,13 @@ public class NoteRenderer {
             gc.setFill(Color.BLACK);
 
             if (note.estSilence()) {
-                // Dessiner le silence en fonction de la durée
-                dessinerSilence(gc, noteX, note.getDuree(),yOffset);
+                dessinerSilence(gc, noteX, note.getDuree(), yOffset);
             } else {
-                // Dessiner la note en fonction de la durée
                 dessinerNote(gc, noteX, noteY, durees.get(note.getDuree()));
             }
 
-            // Dessiner les lignes supplémentaires pour les notes graves et aiguës
             dessinerLignesSupplementaires(gc, noteX, note.getHauteur(), yOffset);
-            
-            noteX += 50; // Espacement entre les notes
+            noteX += SPACING; // Espacement constant entre les notes
         }
     }
 
@@ -93,7 +95,6 @@ public class NoteRenderer {
         }
     }
     
-
     private static void dessinerNote(GraphicsContext gc, int x, int y, int duree) {
         gc.setLineWidth(2);
         switch (duree) {
@@ -113,17 +114,16 @@ public class NoteRenderer {
     }
 
     private static void dessinerSilence(GraphicsContext gc, int x, String duree, int yOffset) {
-        System.out.println("silence");
         switch (duree) {
-            case "Noire": //soupir
+            case "Noire": // soupir
                 gc.setFont(new Font("Roboto", 90));
                 gc.fillText("𝄽", x, 195 + yOffset);
                 break;
-            case "Blanche": //demi-pause
-                gc.fillRect(x, 160, 20, 10 + yOffset);
+            case "Blanche": // demi-pause
+                gc.fillRect(x + 10, 160+ yOffset, 20, 10);
                 break;
-            case "Ronde": //pause
-                gc.fillRect(x, 150, 20, 10 + yOffset);
+            case "Ronde": // pause
+                gc.fillRect(x + 10, 150+ yOffset, 20, 10 );
                 break;
         }
     }

@@ -1,0 +1,129 @@
+{
+  "metadonnes": {
+    "nom": "Nouvelle Partition"
+  },
+  "tempo": 60,
+  "armure": "Sol",
+  "mesures": [
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Do",
+          "duree": "Blanche",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Do",
+          "duree": "Blanche",
+          "estSilence": false
+        }
+      ]
+    },
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        }
+      ]
+    },
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Do",
+          "duree": "Ronde",
+          "estSilence": false
+        }
+      ]
+    },
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Do",
+          "duree": "Ronde",
+          "estSilence": false
+        }
+      ]
+    },
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Silence",
+          "duree": "Blanche",
+          "estSilence": true
+        },
+        {
+          "hauteur": "Silence",
+          "duree": "Blanche",
+          "estSilence": true
+        }
+      ]
+    },
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Silence",
+          "duree": "Noire",
+          "estSilence": true
+        },
+        {
+          "hauteur": "Silence",
+          "duree": "Noire",
+          "estSilence": true
+        },
+        {
+          "hauteur": "Silence",
+          "duree": "Noire",
+          "estSilence": true
+        },
+        {
+          "hauteur": "Silence",
+          "duree": "Noire",
+          "estSilence": true
+        }
+      ]
+    },
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Silence",
+          "duree": "Ronde",
+          "estSilence": true
+        }
+      ]
+    },
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Silence",
+          "duree": "Ronde",
+          "estSilence": true
+        }
+      ]
+    }
+  ]
+}
