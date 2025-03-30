@@ -40,7 +40,7 @@ public class Mesure {
         if (peutAjouterNote(note.getDuree())) {
             notes.add(note);
         } else {
-            System.out.println("❌ Impossible d'ajouter " + note.getDuree() + " : mesure pleine !");
+            System.out.println("Impossible d'ajouter " + note.getDuree() + " : mesure pleine !");
         }
     }
 

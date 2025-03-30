@@ -12,21 +12,10 @@ public class PartitionController {
     private static final Logger logger = Logger.getLogger(PartitionController.class.getName());
 
     public PartitionController() {
-        Partition chargee = GestionFichier.chargerPartition();
-        if (chargee != null) {
-            this.partition = chargee;
-            String sanitizedName = GestionFichier.sanitizeFilename(partition.getMetadonnes().getNom());
-            if (sanitizedName.isEmpty()) {
-                sanitizedName = "NouvellePartition";
-            }
-            this.currentFilePath = "partitions/" + sanitizedName + ".json";
-            logger.info("Partition chargée depuis le fichier par défaut: " + currentFilePath);
-        } else {
-            this.partition = new Partition(new Metadonne("Nouvelle Partition"), 60, "Sol");
-            partition.getMesures().add(new Mesure("4/4"));
-            this.currentFilePath = null;
-            logger.info("Nouvelle partition créée.");
-        }
+        this.partition = new Partition(new Metadonne("Nouvelle Partition"), 60, "Sol");
+        partition.getMesures().add(new Mesure("4/4"));
+        this.currentFilePath = null;
+        logger.info("Nouvelle partition créée.");
     }
 
     public Partition getPartition() {
@@ -44,7 +33,7 @@ public class PartitionController {
     public void ajouterNote(String hauteur, String duree) {
         Mesure mesureActuelle = partition.getMesures().get(partition.getMesures().size() - 1);
         if (!mesureActuelle.peutAjouterNote(duree)) {
-            logger.warning("⚠️ Mesure pleine ! Création d'une nouvelle mesure.");
+            logger.warning("Mesure pleine ! Création d'une nouvelle mesure.");
             mesureActuelle.completerAvecSilences();
             mesureActuelle = new Mesure("4/4");
             partition.getMesures().add(mesureActuelle);
@@ -56,7 +45,7 @@ public class PartitionController {
     public void ajouterSilence(String duree) {
         Mesure mesureActuelle = partition.getMesures().get(partition.getMesures().size() - 1);
         if (!mesureActuelle.peutAjouterNote(duree)) {
-            logger.warning("⚠️ Mesure pleine ! Création d'une nouvelle mesure.");
+            logger.warning("Mesure pleine ! Création d'une nouvelle mesure.");
             mesureActuelle.completerAvecSilences();
             mesureActuelle = new Mesure("4/4");
             partition.getMesures().add(mesureActuelle);
