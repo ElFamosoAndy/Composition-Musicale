@@ -1,0 +1,90 @@
+{
+  "metadonnes": {
+    "nom": "Partition",
+    "compositeur": "Andy"
+  },
+  "tempo": 120,
+  "armure": "Sol",
+  "mesures": [
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Ré",
+          "duree": "Noire",
+          "estSilence": false
+        }
+      ]
+    },
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Mi",
+          "duree": "Blanche",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Ré",
+          "duree": "Blanche",
+          "estSilence": false
+        }
+      ]
+    },
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Do",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Mi",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Ré",
+          "duree": "Noire",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Ré",
+          "duree": "Noire",
+          "estSilence": false
+        }
+      ]
+    },
+    {
+      "signatureRythmique": "4/4",
+      "notes": [
+        {
+          "hauteur": "Do",
+          "duree": "Blanche",
+          "estSilence": false
+        },
+        {
+          "hauteur": "Silence",
+          "duree": "Blanche",
+          "estSilence": true
+        }
+      ]
+    }
+  ]
+}

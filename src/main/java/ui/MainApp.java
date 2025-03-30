@@ -40,10 +40,11 @@ public class MainApp extends Application {
             }
         });
 
-        // Nouveau champ pour saisir l'auteur (compositeur)
+        // Champ pour saisir l'auteur (compositeur)
         TextField authorField = new TextField(
             partitionController.getPartition().getMetadonnes().getCompositeur() != null ?
-            partitionController.getPartition().getMetadonnes().getCompositeur() : "");
+            partitionController.getPartition().getMetadonnes().getCompositeur() : ""
+        );
         authorField.setMaxWidth(300);
         authorField.setAlignment(Pos.CENTER);
         authorField.setPromptText("Auteur");
@@ -149,7 +150,7 @@ public class MainApp extends Application {
         noteSelector.setValue("Do");
 
         ComboBox<String> dureeSelector = new ComboBox<>();
-        dureeSelector.getItems().addAll("Noire", "Blanche", "Ronde");
+        dureeSelector.getItems().addAll("Croche", "Noire", "Blanche", "Ronde");
         dureeSelector.setValue("Noire");
 
         Button addNote = new Button("Ajouter Note");
@@ -157,7 +158,6 @@ public class MainApp extends Application {
             String selectedNote = noteSelector.getValue();
             String selectedDuree = dureeSelector.getValue();
             partitionController.ajouterNote(selectedNote, selectedDuree);
-            // Utilisation du tempo actuel pour jouer la note
             LecteurMIDI.jouerNote(new Note(selectedNote, selectedDuree, false), partitionController.getPartition().getTempo());
             partitionView.mettreAJourAffichage();
         });
@@ -168,13 +168,19 @@ public class MainApp extends Application {
             partitionController.ajouterSilence(selectedDuree);
             partitionView.mettreAJourAffichage();
         });
+        
+        // Nouveau bouton pour revenir en arrière
+        Button undoButton = new Button("Revenir en arrière");
+        undoButton.setOnAction(e -> {
+            partitionController.revenirEnArriere();
+            partitionView.mettreAJourAffichage();
+        });
 
         Button lirePartition = new Button("Lire la partition");
         lirePartition.setOnAction(e -> partitionController.lirePartition());
 
-        controls.getChildren().addAll(noteSelector, dureeSelector, addNote, addSilence, lirePartition);
+        controls.getChildren().addAll(noteSelector, dureeSelector, addNote, addSilence, undoButton, lirePartition);
 
-        // Regrouper le titre, le champ auteur, le contrôle de tempo et la partition
         VBox partitionContainer = new VBox(10);
         partitionContainer.getChildren().addAll(partitionNameField, authorField, tempoBox, partitionView);
         partitionContainer.setAlignment(Pos.TOP_CENTER);
