@@ -19,7 +19,7 @@ public class PartitionView extends Canvas {
     private AnimationTimer animationTimer;
 
     public PartitionView(PartitionController controller) {
-        super(1000, 625); // Largeur fixe, mais hauteur ajustée dynamiquement
+        super(910, 625); // Largeur fixe, mais hauteur ajustée dynamiquement
         this.partitionController = controller;
         this.gc = this.getGraphicsContext2D();
     }

@@ -2,21 +2,36 @@ package ui;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import java.io.File;
+import java.io.IOException;
+import java.awt.image.BufferedImage;
 import audio.LecteurMIDI;
 import business.Note;
 import controller.PartitionController;
 import data.GestionFichier;
 
+// Importations pour PDFBox
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
+
 public class MainApp extends Application {
     private PartitionController partitionController;
     private PartitionView partitionView;
+    // Nouveau conteneur incluant le titre, l'auteur, le tempo et la partition
+    private VBox partitionContainer;
 
     @Override
     public void start(Stage primaryStage) {
@@ -29,7 +44,7 @@ public class MainApp extends Application {
         TextField partitionNameField = new TextField(partitionController.getPartition().getMetadonnes().getNom());
         partitionNameField.setMaxWidth(300);
         partitionNameField.setAlignment(Pos.CENTER);
-        partitionNameField.setStyle("-fx-font-size: 24px; -fx-background-color: transparent; -fx-border-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        partitionNameField.setStyle("-fx-font-size: 32px; -fx-background-color: transparent; -fx-border-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
         partitionNameField.setOnAction(e -> {
             partitionController.getPartition().getMetadonnes().setNom(partitionNameField.getText());
             primaryStage.setTitle(partitionNameField.getText());
@@ -49,7 +64,7 @@ public class MainApp extends Application {
         authorField.setMaxWidth(300);
         authorField.setAlignment(Pos.CENTER);
         authorField.setPromptText("Auteur");
-        authorField.setStyle("-fx-font-size: 16px; -fx-background-color: transparent; -fx-border-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        authorField.setStyle("-fx-font-size: 24px; -fx-background-color: transparent; -fx-border-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
         authorField.setOnAction(e -> {
             partitionController.getPartition().getMetadonnes().setCompositeur(authorField.getText());
         });
@@ -64,13 +79,33 @@ public class MainApp extends Application {
         // Contrôle de tempo via un Spinner
         Label tempoLabel = new Label("Tempo :");
         Spinner<Integer> tempoSpinner = new Spinner<>(40, 200, partitionController.getPartition().getTempo());
-        tempoSpinner.getEditor().setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+
+        // Style pour masquer la bordure du Spinner ET de son éditeur
+        tempoSpinner.setStyle("-fx-font-size: 24px;"
+                + "-fx-background-color: transparent; "
+                + "-fx-border-color: transparent; "
+                + "-fx-focus-color: transparent; "
+                + "-fx-faint-focus-color: transparent; "
+                + "-fx-padding: 0;");
+        tempoSpinner.getEditor().setStyle("-fx-background-color: transparent; "
+                + "-fx-border-color: transparent; "
+                + "-fx-focus-color: transparent; "
+                + "-fx-faint-focus-color: transparent; "
+                + "-fx-padding: 0;");
+
         tempoSpinner.valueProperty().addListener((obs, oldValue, newValue) -> {
             partitionController.getPartition().setTempo(newValue);
         });
+
         HBox tempoBox = new HBox(10, tempoLabel, tempoSpinner);
         tempoBox.setAlignment(Pos.CENTER);
 
+        // Création du conteneur qui regroupe le titre, l'auteur, le contrôle de tempo et la partition
+        partitionContainer = new VBox(10);
+        partitionContainer.getChildren().addAll(partitionNameField, authorField, tempoBox, partitionView);
+        partitionContainer.setAlignment(Pos.TOP_CENTER);
+
+        // Menu "Fichier"
         MenuBar menuBar = new MenuBar();
         Menu menuFile = new Menu("Fichier");
 
@@ -142,8 +177,28 @@ public class MainApp extends Application {
                 partitionView.mettreAJourAffichage();
             }
         });
-
-        menuFile.getItems().addAll(savePartition, savePartitionAs, openPartition);
+        
+        // "Exporter en PDF"
+        MenuItem exportPDF = new MenuItem("Exporter en PDF");
+        exportPDF.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Exporter la partition en PDF");
+            // Répertoire par défaut : racine de l'application
+            fileChooser.setInitialDirectory(new File("."));
+            String sanitizedName = GestionFichier.sanitizeFilename(partitionController.getPartition().getMetadonnes().getNom());
+            if (sanitizedName.isEmpty()) {
+                sanitizedName = "NouvellePartition";
+            }
+            fileChooser.setInitialFileName(sanitizedName + ".pdf");
+            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Fichiers PDF (*.pdf)", "*.pdf");
+            fileChooser.getExtensionFilters().add(extFilter);
+            File file = fileChooser.showSaveDialog(primaryStage);
+            if (file != null) {
+                exportToPDF(file);
+            }
+        });
+        
+        menuFile.getItems().addAll(savePartition, savePartitionAs, openPartition, exportPDF);
         menuBar.getMenus().add(menuFile);
 
         HBox controls = new HBox(10);
@@ -152,7 +207,7 @@ public class MainApp extends Application {
         noteSelector.setValue("Do");
 
         ComboBox<String> dureeSelector = new ComboBox<>();
-        dureeSelector.getItems().addAll("Noire", "Blanche", "Ronde");
+        dureeSelector.getItems().addAll("Croche", "Noire", "Blanche", "Ronde");
         dureeSelector.setValue("Noire");
 
         Button addNote = new Button("Ajouter Note");
@@ -183,7 +238,6 @@ public class MainApp extends Application {
         playToggleButton.setOnAction(e -> {
             if (playToggleButton.getText().equals("Lire la partition")) {
                 partitionController.lirePartition();
-                // Démarrer l'animation pour mettre à jour l'affichage en continu
                 partitionView.startAnimation();
                 playToggleButton.setText("Arrêter la lecture");
                 new Thread(() -> {
@@ -194,7 +248,6 @@ public class MainApp extends Application {
                             break;
                         }
                     }
-                    // Lorsque la lecture se termine, arrêter l'animation et réinitialiser le bouton
                     Platform.runLater(() -> {
                         partitionView.stopAnimation();
                         playToggleButton.setText("Lire la partition");
@@ -209,10 +262,6 @@ public class MainApp extends Application {
 
         controls.getChildren().addAll(noteSelector, dureeSelector, addNote, addSilence, undoButton, playToggleButton);
 
-        VBox partitionContainer = new VBox(10);
-        partitionContainer.getChildren().addAll(partitionNameField, authorField, tempoBox, partitionView);
-        partitionContainer.setAlignment(Pos.TOP_CENTER);
-
         ScrollPane scrollPane = new ScrollPane(partitionContainer);
         scrollPane.setFitToWidth(true);
         scrollPane.setPannable(true);
@@ -225,6 +274,41 @@ public class MainApp extends Application {
         Scene scene = new Scene(root, 800, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+    
+    // Méthode pour exporter le conteneur en PDF au format A4
+    private void exportToPDF(File file) {
+        // Capturer un snapshot du conteneur
+        WritableImage snapshot = partitionContainer.snapshot(new SnapshotParameters(), null);
+        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(snapshot, null);
+        
+        try (PDDocument document = new PDDocument()) {
+            // Utiliser le format A4 pour la page PDF
+            PDRectangle a4 = PDRectangle.A4;
+            PDPage page = new PDPage(a4);
+            document.addPage(page);
+            
+            // Calculer le facteur de redimensionnement pour que l'image rentre dans la page A4
+            float scaleX = a4.getWidth() / bufferedImage.getWidth();
+            float scaleY = a4.getHeight() / bufferedImage.getHeight();
+            float scale = Math.min(scaleX, scaleY);
+            float imageWidth = bufferedImage.getWidth() * scale;
+            float imageHeight = bufferedImage.getHeight() * scale;
+            // Positionner l'image en haut au centre : centrer horizontalement et placer l'image en haut avec une marge de 20
+            float posX = (a4.getWidth() - imageWidth) / 2;
+            float marginTop = 20;
+            float posY = a4.getHeight() - imageHeight - marginTop;
+            
+            PDImageXObject pdImage = LosslessFactory.createFromImage(document, bufferedImage);
+            
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                contentStream.drawImage(pdImage, posX, posY, imageWidth, imageHeight);
+            }
+            
+            document.save(file);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {
